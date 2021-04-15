@@ -21,7 +21,7 @@ const createObjectTree = (requestObject) => {
         objectTree = { ...objectTree, objTemp }
 
     });
-
+    //console.log(objectTree);
     return objectTree;
 
 }

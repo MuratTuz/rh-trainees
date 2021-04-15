@@ -19,10 +19,6 @@ infomaniakRouter.route('/')
         res.end('Not supported yet!');
     })
     .post((req, res, next) => {
-        /*         console.log(req.body);
-                Object.entries(req.body).map(([key, value]) => {
-                    objectTree = createObjectTree(objectTree, key, value);
-                }) */
         const objectTree = createObjectTree(req.body)
         res.end(JSON.stringify(objectTree));
     });
