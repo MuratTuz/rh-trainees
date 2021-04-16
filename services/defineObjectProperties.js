@@ -15,11 +15,15 @@ const defineObjectProperties = (objectProperties, objectTypes, index) => {
         }
     });
 
-    if (index === 0 || objectProperties.length === 1) {
+    if ( index === 0 || index < objectProperties.length-1) {
         typeValue = 'object';
+        typeValidations = ['object'];
         if (objectProperties[index + 1] === '*') {
             typeValue = 'array';
+            typeValidations = ['array'];
         }
+    } else {
+        typeValue = 'leaf';
     }
 
     if (objectProperties[index] === '*') {

@@ -2,30 +2,51 @@
 
 
 var defineObjectProperties = require("./defineObjectProperties");
-var setObjectByTypeName = require("./setObjectByTypeName");
+var setObjectProperty = require("./setObjectProperty");
 
-const createObjectProperty = (objectProperties, objectTypes) => {
+const createObjectProperty = (objectTree, objectProperties, objectTypes, currentIndex) => {
+     
+    const { typeName, typeValue, typeValidations, keyProperties } =
+    defineObjectProperties(objectProperties, objectTypes, currentIndex);
 
-    let object = {};
-    let propertyNumber = objectProperties.length;
+    //console.log(objectTree, objectProperties, objectTypes, currentIndex, typeValue);
+    
+    if (objectProperties[currentIndex + 1]) {
+       // console.log(currentIndex);
 
-    for (let i = 0; i < propertyNumber; i++) {
-        const { typeName, typeValue, typeValidations, keyProperties } = defineObjectProperties(objectProperties, objectTypes, i);
-        console.log(typeName, typeValue, typeValidations, keyProperties);
+        if (objectTree[typeName]) {
+            let objTemp = createObjectProperty(objectTree[typeName], objectProperties, objectTypes, ++currentIndex);
+            console.log('popopopopop', currentIndex);
+            if(currentIndex === objectProperties.length -1){
+                
+                return {  ...objectTree[typeName], properties:{...objectTree[typeName].properties, objTemp} }
+            }else{
+                return {...objectTree, ...objTemp};
+            }
 
-        object = setObjectByTypeName(object, typeName, typeValue, typeValidations)
-        //console.log(object);
-        if ((i === propertyNumber - 1) && keyProperties) {
-            for (const key of keyProperties) {
-                object = setObjectByTypeName(object, key, 'leaf', []);
+        } else {
+            let objElement = setObjectProperty(typeValue, typeValidations);
+            objectTree[typeName] = {[typeName]: objElement};
+            let objTemp = createObjectProperty(objectTree[typeName], objectProperties, objectTypes, ++currentIndex);
+            
+            
+            //obj.properties = objProperties;console.log(obj);
+            if (typeValue === 'object') {
+                console.log(currentIndex, {  ...objectTree[typeName], properties:objTemp });
+                return {  ...objectTree[typeName], properties:objTemp }
+            } else {
+                console.log('currentIndex', {  ...objectTree[typeName], ...objTemp });
+                return {  ...objectTree[typeName], ...objTemp }
             }
 
         }
-
+        
+    } else {
+        let objTemp = setObjectProperty(typeValue, typeValidations); 
+        console.log(currentIndex, { [typeName]: objTemp });
+        return { [typeName]: objTemp }
     }
-
-    return object; //immutable
-
+    
 }
 
 module.exports = createObjectProperty;

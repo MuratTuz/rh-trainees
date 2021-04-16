@@ -15,10 +15,8 @@ const createObjectTree = (requestObject) => {
 
         // turns 'object|keys:w,o' into ['object', 'keys:w,o']
         let objectTypes = value.split('|');
-
-        const objTemp = createObjectProperty(objectProperties, objectTypes);
-        console.log('object ', objTemp);
-        objectTree = { ...objectTree, objTemp }
+        //console.log(objectTree);
+        objectTree = createObjectProperty(objectTree, objectProperties, objectTypes, 0);
 
     });
     //console.log(objectTree);
