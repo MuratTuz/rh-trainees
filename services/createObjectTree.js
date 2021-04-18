@@ -1,33 +1,3 @@
-/*
-var createObjectProperty = require("./createObjectProperty");
-
-
-const createObjectTree = (requestObject) => {
-
-    var objectTree = {};
-
-    // e.g. key='a.*.y.t',  value='integer'
-    Object.entries(requestObject).map(([key, value]) => {
-
-        // turns 'a.*.y.t' into ['a','*','y','t']
-        let objectProperties = key.split('.');
-
-        // turns 'object|keys:w,o' into ['object', 'keys:w,o']
-        let objectTypes = value.split('|');
-        //console.log(objectTree);
-        objectTree = createObjectProperty(objectTree, objectProperties, objectTypes, 0);
-
-    });
-    //console.log(objectTree);
-    return objectTree;
-
-}
-
-module.exports = createObjectTree;
-*/
-// file: createObjectTree.js 16.04.2021
-
-const createObjectProperty = require("./createObjectProperty");
 
 /*
  Node: it keeps every data that will be used
@@ -51,7 +21,7 @@ class Node {
 
     toString() {
         let obj = {};
-        if (this.isArray) {
+        if (this.isArray) {// if they are first array nodes
             obj = {
                 "type": "array",
                 "validators": [
@@ -65,12 +35,12 @@ class Node {
                     "properties": {}
                 }
             };
-        } else if (!this.isArray && !this.children.length) {
+        } else if (!this.children.length) { // if they are last nodes
             obj = {
                 "type": "leaf",
-                "validators": this.validations ? this.validations : []
+                "validators": this.validations
             };
-        } else {
+        } else { // if they are NOT last nodes
             obj = {
                 "type": "object",
                 "validators": [
@@ -83,36 +53,38 @@ class Node {
     }
 }
 
+/**
+ * Stores entire tree structure using Node objects
+ */
+
 class Tree {
     constructor() {
         // root node
         this.tree = new Node('root', 0);
-        // on every iteration of the object new datas are coming in there they will be kept
+        // on every iteration of the object, new datas are coming in there they will be kept
         this.newItems = [];
         // it holds the index of array marked characters, leter will be usefull when structuring json
         this.arraySignIndexes = [];
     }
 
     setTree(items, value) {
-        if(value.includes('keys')){
-            const valueDefinedNodes = value.split('keys:')[1].split(','); //  "object|keys:w,o" --> ['w','o']
-            const validations = value.split('|')[0]; // node leaf validation array  "object|keys:w,o" --> ['object']
+        let valueDefinedNodes;
+        let validations;
+
+         if(value.includes('keys')){
+            valueDefinedNodes = value.split('keys:')[1].split(','); //  "object|keys:w,o" --> ['w','o']
+            validations = value.split('|')[0]; // validation array of the parent of keyleaf nodes  ex "object|keys:w,o" --> ['object']
+            valueDefinedNodes.map(val => {
+                const extraItem = `${items}.${val}`;
+                this.setItems(extraItem);
+                this.addToTree([]);
+            })
         }else{
-            const valueDefinedNodes = null;
-            const validations = value.split('|'); // node leaf validation array  "integer|min:5" --> ['integer', 'min:5']
+            validations = value.split('|'); //  leaf node validation array  "integer|min:5" --> ['integer', 'min:5']
+            this.setItems(items);
+            this.addToTree(validations);        
         }
 
-        console.log('validations', validations);
-        if (valueDefinedNodes) {
-            valueDefinedNodes.map(val => {
-                const extraItems = `${items}.${val}`;
-                this.setItems(extraItems);
-                this.addToTree(validations);
-            })
-        } else {
-            this.setItems(items);
-            this.addToTree(validations);
-        }
     }
 
     setItems(items) {
@@ -121,7 +93,6 @@ class Tree {
             .filter(a => a != null)
             .map((a, i) => a - i); // after removing stars, array featured chars positons are here calculated
 
-        console.log(items, this.arraySignIndexes);
         this.newItems = items.split('.').filter(a => a != '*');
     }
 
@@ -129,14 +100,9 @@ class Tree {
         for (let a = 0; a < this.newItems.length; a++) {
             const path = this.newItems.slice(0, a + 1).join('.');
             const parentPath = this.newItems.slice(0, a).join('.');
-
+        
             // create a new node
-/*             if (a == this.newItems.length - 1) {
-                const newNode = new Node(this.newItems[a], this.arraySignIndexes.includes(a), path, validations);
-            } else {
-                const newNode = new Node(this.newItems[a], this.arraySignIndexes.includes(a), path, null);
-            } */
-            const newNode = new Node(this.newItems[a], this.arraySignIndexes.includes(a), path, null);
+            const newNode = new Node(this.newItems[a], this.arraySignIndexes.includes(a), path, validations);
             // check if path exists
             const exits = this.findNode(path, this.tree);
             // dont proceed if path already exist. And also dont add * to the tree
@@ -157,7 +123,7 @@ class Tree {
     }
 
     generateJson(obj, children) {
-        console.log(obj, children.length);
+        
         for (let i = 0; i < children.length; i++) {
 
             obj[children[i].name] = children[i].toString();
