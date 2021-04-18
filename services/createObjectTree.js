@@ -1,4 +1,3 @@
-
 /*
  Node: it keeps every data that will be used
  and convert objects for a tree structure
@@ -21,7 +20,7 @@ class Node {
 
     toString() {
         let obj = {};
-        if (this.isArray) {// if they are first array nodes
+        if (this.isArray) { // if it is array node
             obj = {
                 "type": "array",
                 "validators": [
@@ -35,7 +34,7 @@ class Node {
                     "properties": {}
                 }
             };
-        } else if (!this.children.length) { // if they are last nodes
+        } else if (!this.children.length) { // if it is  the last node
             obj = {
                 "type": "leaf",
                 "validators": this.validations
@@ -68,21 +67,18 @@ class Tree {
     }
 
     setTree(items, value) {
-        let valueDefinedNodes;
-        let validations;
 
-         if(value.includes('keys')){
-            valueDefinedNodes = value.split('keys:')[1].split(','); //  "object|keys:w,o" --> ['w','o']
-            validations = value.split('|')[0]; // validation array of the parent of keyleaf nodes  ex "object|keys:w,o" --> ['object']
+        if (value.includes('keys')) {
+            const valueDefinedNodes = value.split('keys:')[1].split(','); //  "object|keys:w,o" --> ['w','o']
             valueDefinedNodes.map(val => {
                 const extraItem = `${items}.${val}`;
                 this.setItems(extraItem);
                 this.addToTree([]);
             })
-        }else{
-            validations = value.split('|'); //  leaf node validation array  "integer|min:5" --> ['integer', 'min:5']
+        } else {
+            const validations = value.split('|'); //  leaf node validation array  "integer|min:5" --> ['integer', 'min:5']
             this.setItems(items);
-            this.addToTree(validations);        
+            this.addToTree(validations);
         }
 
     }
@@ -91,7 +87,7 @@ class Tree {
         this.arraySignIndexes = items.split('.')
             .map((a, i) => a == '*' ? i - 1 : null)
             .filter(a => a != null)
-            .map((a, i) => a - i); // after removing stars, array featured chars positons are here calculated
+            .map((a, i) => a - i); // after removing stars, array featured stars' positons are here calculated
 
         this.newItems = items.split('.').filter(a => a != '*');
     }
@@ -100,7 +96,7 @@ class Tree {
         for (let a = 0; a < this.newItems.length; a++) {
             const path = this.newItems.slice(0, a + 1).join('.');
             const parentPath = this.newItems.slice(0, a).join('.');
-        
+
             // create a new node
             const newNode = new Node(this.newItems[a], this.arraySignIndexes.includes(a), path, validations);
             // check if path exists
@@ -123,7 +119,7 @@ class Tree {
     }
 
     generateJson(obj, children) {
-        
+
         for (let i = 0; i < children.length; i++) {
 
             obj[children[i].name] = children[i].toString();
