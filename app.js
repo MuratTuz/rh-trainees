@@ -4,7 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var infomaniakRouter = require('./routes/infomaniakRouter');
+var infomaniakRouter = require('./src/routes/infomaniakRouter');
 
 var app = express();
 
